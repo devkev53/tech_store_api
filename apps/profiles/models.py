@@ -70,7 +70,6 @@ class User(AbstractBaseUser, PermissionsMixin):
     date_to_birth = models.DateField(_('Date to Birth'), blank=True, null=True)
     is_active = models.BooleanField(_('Is Active'), default=True)
     is_staff = models.BooleanField(_('Is Staff'), default=False)
-    role = models.ManyToManyField(Role, blank=True, null=True, verbose_name=(_('Role')))
     historical = HistoricalRecords()
 
     objects = UserManager()
