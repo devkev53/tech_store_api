@@ -5,8 +5,8 @@ from django.utils.translation import gettext as _
 # Create your models here.
 
 STATE_CHOICES = (
-    (True, 'Inactive'),
-    (False, 'Active'),
+    (True, 'Active'),
+    (False, 'Inactive'),
 )
 
 class BaseModel(models.Model):

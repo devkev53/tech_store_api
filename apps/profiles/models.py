@@ -1,7 +1,5 @@
+from datetime import date
 # Django Imports
-import email
-from tabnanny import verbose
-from time import daylight
 from django.db import models
 from django.contrib.auth.models import BaseUserManager, AbstractBaseUser, PermissionsMixin
 from django.utils.translation import gettext as _
@@ -92,3 +90,12 @@ class User(AbstractBaseUser, PermissionsMixin):
     def __str__(self):
         ''' Retorna como se ve el objeto en un query'''
         return self.email
+    
+    def years_old(self):
+        years_old = None
+        if self.date_to_birth:
+            date_today = date.today()
+            date_birth=self.date_to_birth
+            years_old = date_today.year - date_birth.year - ((date_today.month, date_today.day) < (date_birth.month, date_birth.day))
+        # primero restamos los años y luego restamos la comparación entre mes y día actual y mes y día de nacimiento. 
+        return years_old

@@ -22,7 +22,7 @@ class RoleAdmin(admin.ModelAdmin):
 class UserAdmin(BaseUserAdmin):
     '''Admin View for User'''
 
-    list_display = ('email','get_full_name', 'is_active', 'is_staff')
+    list_display = ('email','get_full_name', 'is_active', 'is_staff', 'years_old')
     # list_filter = ('',)
     # inlines = [
     #     Inline,
@@ -45,7 +45,7 @@ class UserAdmin(BaseUserAdmin):
         }),
         (_('Permisions'), {
             'fields': (
-                'role', 'is_active', 'is_staff', 'is_superuser'
+                'is_active', 'is_staff', 'is_superuser'
             ),
         }),
         (_('Important Dates'), {
@@ -58,7 +58,7 @@ class UserAdmin(BaseUserAdmin):
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
-            'fields': ('email', 'password1', 'password2', 'role'),
+            'fields': ('email', 'password1', 'password2'),
         }),
     )
 
