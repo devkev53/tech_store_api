@@ -22,7 +22,7 @@ class CategoryAdmin(admin.ModelAdmin):
 class ProductImageAdmin(admin.ModelAdmin):
     '''Admin View for ProductImage'''
 
-    list_display = ('product', 'image_upload', 'image_url',)
+    list_display = ('product', 'image_url',)
     # list_filter = ('',)
     # inlines = [
     #     Inline,
@@ -47,6 +47,6 @@ class ProductAdmin(admin.ModelAdmin):
     # ]
     # raw_id_fields = ('',)
     # readonly_fields = ('',)
-    # search_fields = ('',)
+    search_fields = ('name',)
     # date_hierarchy = ''
     # ordering = ('',)

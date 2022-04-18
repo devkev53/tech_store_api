@@ -64,15 +64,13 @@ class Product(BaseModel):
 
     def __str__(self):
         """Unicode representation of Product."""
-        return self.name
+        return '%s - Q. %s' % (self.name, self.price)
 
     # TODO: Define custom methods here
 
     def get_images(self):
         images = []
         for image in ProductImage.objects.filter(product=self):
-            if image.image_upload:
-                images.append(image.image_upload.url)
             images.append(image.image_url)
         return images
     
@@ -87,7 +85,6 @@ class ProductImage(BaseModel):
     """Model definition for Product Image."""
 
     # TODO: Define fields here
-    image_upload = models.ImageField(_('Product Image Upload'), upload_to='products/images/', blank=True, null=True)
     image_url = models.URLField(_('Product Image URL'), blank=True, null=True)
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='image_product', blank=True, null=True)
     historical = HistoricalRecords()
@@ -113,7 +110,7 @@ class ProductImage(BaseModel):
 
     # TODO: Define custom methods here
 
-    def clean(self) -> None:
+    def clean(self):
         images = ProductImage.objects.filter(product=self.product)
         if images.count() > 4:
             raise ValidationError(_('You can only upload 5 images'))

@@ -1,4 +1,5 @@
 from apps.products.models import Product
+from rest_framework import viewsets
 from rest_framework import generics, status
 from rest_framework.response import Response
 from apps.core.api import GeneralListAPIView
@@ -7,12 +8,55 @@ from apps.products.api.serializers.products_serializers import (
     )
 
 
-# List All Products
-class ProductListAPIView(GeneralListAPIView):
-    """
-    List all products, or create a new product.
-    """
+class ProductViewSet(viewsets.ModelViewSet):
     serializer_class = ProductListSerializer
+
+    def get_queryset(self, pk=None):
+        if pk == None:
+            return self.get_serializer_class().Meta.model.objects.filter(state=True)
+        return self.get_serializer_class().Meta.model.objects.filter(id=pk, state=True).first()
+
+    def create(self, request):
+        serializer = ProductCreateSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'message': 'Product Created Successful'}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    def destroy(self, request, pk=None):
+        product = self.get_queryset().filter(id=pk).first()
+        if product:
+            product.state = False
+            product.save()
+            return Response({'message': 'Product Destroy Successful'}, status=status.HTTP_200_OK)
+        
+        return Response({'message': 'This Product No Exists'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    def partial_update(self, request, pk=None):
+        if self.get_queryset(pk):
+            product_serializer = ProductUpdateSerializer(self.get_queryset(pk), data=request.data, context=request.data, partial=True)
+            if product_serializer.is_valid():
+                product_serializer.save()
+                return Response(product_serializer.data, status=status.HTTP_200_OK)
+            return Response(product_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def update(self, request, pk=None):
+        if self.get_queryset(pk):
+            product_serializer = ProductUpdateSerializer(self.get_queryset(pk), data=request.data, context=request.data, partial=False)
+            if product_serializer.is_valid():
+                product_serializer.save()
+                return Response(product_serializer.data, status=status.HTTP_200_OK)
+            return Response(product_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+
+# List All Products
+# class ProductListAPIView(GeneralListAPIView):
+#     """
+#     List all products, or create a new product.
+#     """
+#     serializer_class = ProductListSerializer
 
 
 # Create a New Product and Images
@@ -42,7 +86,11 @@ class ProductRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView)
     serializer_class = ProductUpdateSerializer
 
     def get_queryset(self, pk=None):
-        return self.get_serializer_class().Meta.model.objects.filter(state=True)
+        if pk == None:
+            return self.get_serializer_class().Meta.model.objects.filter(state=True)
+        else:
+            return self.get_serializer_class().Meta.model.objects.filter(id=pk, state=True).first()
+
 
     # Logic Destroy
     def delete(self, request, pk=None):
@@ -56,18 +104,16 @@ class ProductRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView)
 
     # Logic Patch
     def patch(self, request, pk=None):
-        product = ProductListSerializer.Meta.model.objects.filter(state=True).filter(id=pk).first()
-        if product:
-            product_serializer = ProductListSerializer(product)
+        if self.get_queryset(pk):
+            product_serializer = ProductListSerializer(self.get_queryset(pk))
             return Response(product_serializer.data, status=status.HTTP_200_OK)
         
-        Response({'message': 'This Product No Exists'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'message': 'This Product No Exists'}, status=status.HTTP_400_BAD_REQUEST)
 
     # Logic Put
     def put(self, request, pk=None):
-        product = ProductListSerializer.Meta.model.objects.filter(state=True).filter(id=pk).first()
-        if product:
-            product_serializer = ProductUpdateSerializer( product, data=request.data, context=request.data)
+        if self.get_queryset(pk):
+            product_serializer = ProductUpdateSerializer(self.get_queryset(pk), data=request.data, context=request.data)
             if product_serializer.is_valid():
                 product_serializer.save()
                 return Response(product_serializer.data, status=status.HTTP_200_OK)

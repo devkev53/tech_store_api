@@ -1,30 +1,14 @@
-from itertools import product
 
 from rest_framework import serializers
 from apps.products.api.serializers.general_serializers import CategorySerializer, ProductImageSerializer
 from apps.products.models import Product, ProductImage, Category
 
 class ProductListSerializer(serializers.ModelSerializer):
-    # images = serializers.SerializerMethodField()
-    # category = CategorySerializer()
-    # category = serializers.StringRelatedField()
-    # total_descount = serializers.SerializerMethodField()
 
     class Meta:
         model = Product
         exclude = ('state','modified_date', 'inactivation_date', 'created_date',)
 
-    # def get_images(self, obj):
-    #     return obj.get_images()
-    
-    # def get_total_descount(self, obj):
-    #     return obj.total_descount()
-
-    def get_category(self, obj):
-        if obj.category != None:
-            return obj.category.description
-        else:
-            return ''
 
     def to_representation(self, instance):
         obj = {
@@ -35,7 +19,7 @@ class ProductListSerializer(serializers.ModelSerializer):
                 "images": instance.get_images(),
                 "price": instance.price,
                 "total_descount": instance.total_descount(),
-                "category": self.get_category(instance),
+                "category": instance.category.description if instance.category is not None else '',
                 "descount": instance.descount,
             }
         return obj
@@ -77,20 +61,21 @@ class ProductUpdateSerializer(serializers.ModelSerializer):
                 "images": instance.get_images(),
                 "price": instance.price,
                 "total_descount": instance.total_descount(),
-                "category": instance.category.description,
+                "category": instance.category.description if instance.category is not None else '',
                 "descount": instance.descount,
             }
         return obj
 
 
     def update(self, instance, validated_data):
-        # Extract images send in the Json an save a list
-        images_data = validated_data.pop('images')
-        # Get a image an check the image exists in DB
-        for image in images_data:
-            print(image)
-            if not ProductImage.objects.filter(image_url=image):
-                ProductImage.objects.create(product=instance, image_url=image)       
+        if validated_data.get('images'):
+            # Extract images send in the Json an save a list
+            images_data = validated_data.pop('images')
+            # Get a image an check the image exists in DB
+            for image in images_data:
+                print(image)
+                if not ProductImage.objects.filter(image_url=image):
+                    ProductImage.objects.create(product=instance, image_url=image)       
         update_product = super().update(instance, validated_data)
         update_product.save()
         return update_product
